@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version 0.0.0 -->
-<!--
-To verify the integrity of this webpage,
-go to https://github.com/sortingoutsorting/basic-coin-flipper/,
-and compare its sha256 checksum with the file `checksum`.
--->
-
+<template id="version">0.0.1</template>
 <head>
   <meta charset="utf-8">
   <title>Coin flipper</title>
@@ -154,6 +148,14 @@ and compare its sha256 checksum with the file `checksum`.
       --h: 0
     }
 
+    #siteinfo {
+      font-size: 0.5rem;
+    }
+    #source {
+      text-decoration: underline;
+      color: hsl(240, 75%, 75%)
+    }
+
     #right {
       padding: 2rem;
       overflow: hidden
@@ -236,6 +238,13 @@ and compare its sha256 checksum with the file `checksum`.
         Clear
       </button>
     </div>
+    <div id="siteinfo">
+      <a id="source" href="https://github.com/sortingoutsorting/basic-coin-flipper">
+        View source and checksum on GitHub
+      </a>
+      <div id="versiontext"></div>
+    </div>
+  </div>
   </div>
   <div id="right">
     <div id="history">
@@ -301,6 +310,10 @@ and compare its sha256 checksum with the file `checksum`.
     function clear() {
       history_container.replaceChildren()
     }
+
+    const version = document.getElementById('version').content.textContent
+    document.getElementById('source').href = `https://github.com/sortingoutsorting/basic-coin-flipper/tree/${version}`
+    document.getElementById('versiontext').textContent = `version ${version}`
 
     document.getElementById('flip').addEventListener('click', flip)
     document.getElementById('flipnr').addEventListener('click', flip_in_new_row)
