@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- version 0.0.0 -->
+<!--
+To verify the integrity of this webpage,
+go to https://github.com/sortingoutsorting/basic-coin-flipper/,
+and compare its sha256 checksum with the file `checksum`.
+-->
+
+<head>
+  <meta charset="utf-8">
+  <title>Coin flipper</title>
+  <meta name="description" content="coin flipper">
+  <style>
+    *,
+    *:before,
+    *:after {
+      box-sizing: border-box
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      line-height: calc(1em + 0.625rem);
+      -webkit-font-smoothing: antialiased;
+      -o-tab-size: 4;
+      -moz-tab-size: 4;
+      tab-size: 4
+    }
+
+    :where(html, body) {
+      height: 100dvh
+    }
+
+    :where(p, h1, h2, h3, h4, h5, h6) {
+      overflow-wrap: break-word
+    }
+
+    :where(img, picture, video, canvas, svg) {
+      display: block;
+      max-width: 100%;
+      height: auto
+    }
+
+    :where(h1, h2, h3, h4, h5, h6) {
+      font-size: inherit;
+      font-weight: inherit
+    }
+
+    :where(a) {
+      color: inherit;
+      font: inherit;
+      text-decoration: inherit
+    }
+
+    :where(input, button, textarea, select) {
+      font: inherit
+    }
+
+    :where(button) {
+      border: none;
+      color: inherit;
+      background-color: transparent
+    }
+
+    :where(hr) {
+      height: 0;
+      color: inherit;
+      border-top-width: 1px;
+      margin-block: 1rem
+    }
+
+    html {
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      font-size: 24px
+    }
+
+    body {
+      max-width: 60rem;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      align-items: stretch;
+      grid-template-columns: min-content minmax(480px, 1fr)
+    }
+
+    #left {
+      border-right: 1px solid black;
+      padding-right: 2rem;
+    }
+
+    #title {
+      font-size: 2rem;
+      margin-bottom: 0.5em
+    }
+
+    #n_label {
+      display: block;
+    }
+
+    #n {
+      padding-inline: 0.25rem;
+    }
+
+    #presets {
+      margin-block: 0.5rem;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0.25rem
+    }
+
+    .preset {
+      padding: 0 0.25rem;
+      border-radius: 0.25rem;
+      --l: 90%;
+      background-color: hsl(240, 10%, var(--l));
+      cursor: pointer
+    }
+
+    .preset:hover {
+      --l: 75%;
+    }
+
+    #buttons {
+      margin-block: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    .button {
+      padding: 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      --s: 75%;
+      --l: 60%;
+      background: hsl(var(--h) var(--s) var(--l))
+    }
+
+    .button:hover {
+      --l: 75%;
+    }
+
+    #flip {
+      --h: 150
+    }
+
+    #flipnr {
+      --h: 150;
+      background: hsl(150 75% var(--l))
+    }
+
+    #clear {
+      --h: 0
+    }
+
+    #right {
+      padding: 2rem;
+      overflow: hidden
+    }
+
+    #history {
+      /* display: grid;
+      grid-template-columns: auto 1fr auto; */
+      /* gap: 1rem; */
+      max-height: 100%;
+      overflow-y: scroll
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.25rem;
+      overflow: auto hidden
+    }
+
+    .row:not(:first-child) {
+      margin-top: 1rem;
+    }
+
+    .f {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      --s: 75%;
+      --l: 60%;
+      background: hsl(var(--h) var(--s) var(--l));
+      cursor: pointer
+    }
+
+    .f:where(.dim) {
+      --l: 90%
+    }
+
+    .f:hover {
+      --l: 75%
+    }
+
+    .h {
+      --h: 210
+    }
+
+    .t {
+      --h: 30
+    }
+  </style>
+</head>
+
+<body>
+  <div id="left">
+    <h1 id="title">Coin flipper</h1>
+    <label id="n_label" for="n">Number of coins</label>
+    <input id="n" type="number" min="1" step="1" pattern="\d*" value="1">
+    <div id="presets">
+      <button class="preset">1</button>
+      <button class="preset">2</button>
+      <button class="preset">3</button>
+      <button class="preset">4</button>
+      <button class="preset">6</button>
+      <button class="preset">8</button>
+    </div>
+    <div id="buttons">
+      <button id="flip" class="button">
+        Flip!
+      </button>
+      <button id="flipnr" class="button">
+        Flip! (in new row)
+      </button>
+      <button id="clear" class="button">
+        Clear
+      </button>
+    </div>
+  </div>
+  <div id="right">
+    <div id="history">
+    </div>
+  </div>
+  <template id="row">
+    <div class="row"></div>
+  </template>
+  <template id="result">
+    <button class="f"></button>
+  </template>
+  <script>
+    // coin flipping. heads = 1, tails = 0
+    function flip_coin() { return Math.random() < 0.5 ? 1 : 0 }
+
+    /** @type {HTMLInputElement} */
+    const input = document.getElementById('n')
+    /** @type {HTMLDivElement} */
+    const history_container = document.getElementById('history')
+    /** @type {HTMLTemplateElement} */
+    const row_template = document.getElementById('row')
+    /** @type {HTMLTemplateElement} */
+    const result_template = document.getElementById('result')
+
+    function toggle_flip(e) {
+      e.target.classList.toggle('dim')
+    }
+
+    function create_nodes(n) {
+      const fragment = new DocumentFragment()
+      fragment.replaceChildren(...Array.from({ length: n }).map(flip_coin).map(build_node))
+      return fragment
+    }
+
+    function build_node(heads) {
+      const fragment = result_template.content.cloneNode(true)
+      /** @type {HTMLDivElement} */
+      const [node] = fragment.children
+      node.textContent = heads ? 'H' : 'T'
+      node.classList.toggle(heads ? 'h' : 't')
+      node.addEventListener('click', toggle_flip)
+      return fragment
+    }
+
+    function create_row() {
+      const fragment = row_template.content.cloneNode(true)
+      history_container.insertBefore(fragment, history_container.firstElementChild)
+      return history_container.firstElementChild
+    }
+
+    function flip() {
+      const n = input.valueAsNumber
+      const row = history_container.firstElementChild ?? create_row()
+      row.insertBefore(create_nodes(n), row.firstElementChild)
+    }
+
+    function flip_in_new_row() {
+      const n = input.valueAsNumber
+      create_row()
+      flip()
+    }
+
+    function clear() {
+      history_container.replaceChildren()
+    }
+
+    document.getElementById('flip').addEventListener('click', flip)
+    document.getElementById('flipnr').addEventListener('click', flip_in_new_row)
+    document.getElementById('clear').addEventListener('click', clear)
+    for (const el of document.querySelectorAll('.preset')) {
+      const n = Math.round(Number(el.textContent))
+      el.addEventListener('click', () => input.value = n)
+    }
+  </script>
+</body>
+
+</html>
